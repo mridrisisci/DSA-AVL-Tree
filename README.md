@@ -2,6 +2,8 @@
 
 Datamatiker 4.semester - Valgfag: Datastrukturer & algoritmer --- miniprojekt
 
+## Screenshot of Running App 
+![alt text](screenshot-running-app-1.jpg)
 ## Beskrivelse
 
 Dette projekt er en simpel visualisering af et **AVL-træ**. Brugeren kan indsætte tal og se, hvordan et selvbalancerende binært søgetræ opbygges og balanceres ved hjælp af rotationer (LL, LR, RL, RR).

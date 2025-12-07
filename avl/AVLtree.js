@@ -53,7 +53,7 @@ export class AVLTree {
 
   insertNode(node, value) {
     // if no node, it creates a new node
-    if (!node) return new AVLNode(value);
+    if (!node) return new AVLNode(value); // first node is created
 
     /*
     checks which side of the root node to insert the node-leaf.
