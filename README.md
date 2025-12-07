@@ -4,6 +4,10 @@ Datamatiker 4.semester - Valgfag: Datastrukturer & algoritmer --- miniprojekt
 
 ## Screenshot of Running App 
 ![alt text](screenshot-running-app.jpg)
+
+## Deloyed version of the App
+https://mridrisisci.github.io/datastruktur-algo-miniprojekt/
+
 ## Beskrivelse af projektet
 
 Dette projekt handler om at demonstrere visuelt hvordan algoritmen der er udviklet af de 2 russere Georgy Adelson-Velsky and Evgenii Landis i 1962. Demonstrationen lægger vægt på at vise hvad der sker trin for trin. Projektet lægger vægt på indsættelse og balancering, men AVL-tree understøtter også operationerne sletning og søgning
