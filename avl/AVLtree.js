@@ -1,15 +1,24 @@
+let NODE_ID_COUNTER = 1;
+
 export class AVLNode {
   constructor(value) {
     this.value = value; // receives from frontend
     this.left = null;
     this.right = null;
     this.height = 1;
+    // Each node gets a stable id so the SVG element can be reused
+    this.id = NODE_ID_COUNTER++;
+    // Logical position used by the SVG renderer (not part of the AVL algorithm)
+    this.x = 0;
+    this.y = 0;
   }
 }
 
 export class AVLTree {
   constructor() {
     this.root = null;
+    // Collected when a rotation happens and later used for SVG animation
+    this.animationSteps = [];
   }
 
   getHeight(node) {
@@ -22,10 +31,19 @@ export class AVLTree {
 
   rightRotate(old_root) {
     const new_root = old_root.left; // 20
-    const new_node_left = new_root.right; // null 
+    const temp_right_subtree = new_root.right; // null 
+
+    // Capture node positions before rotation for SVG animation
+    this.animationSteps.push({
+      type: 'right',
+      nodes: [
+        { node: old_root, startX: old_root.x, startY: old_root.y },
+        { node: new_root, startX: new_root.x, startY: new_root.y }
+      ]
+    });
 
     new_root.right = old_root; // 30
-    old_root.left = new_node_left; // 10
+    old_root.left = temp_right_subtree; // null
 
     /*
     eksemplet er med værdierne: 30,20,10 
@@ -41,6 +59,15 @@ export class AVLTree {
   leftRotate(old_root) {
     const new_root = old_root.right;
     const new_node_right = new_root.left;
+
+    // Capture node positions before rotation for SVG animation
+    this.animationSteps.push({
+      type: 'left',
+      nodes: [
+        { node: old_root, startX: old_root.x, startY: old_root.y },
+        { node: new_root, startX: new_root.x, startY: new_root.y }
+      ]
+    });
 
     new_root.left = old_root;
     old_root.right = new_node_right;
@@ -72,7 +99,9 @@ export class AVLTree {
     const balance = this.getBalance(node);
 
     /* 
-    checks if a rotation is neededd
+    checks if a rotation is needed.
+    At this point we know a rotation will happen (LL, RR, LR, RL case),
+    and the visual layer can later use animationSteps to show it.
     */
     if (balance > 1 && value < node.left.value) {
       return this.rightRotate(node);
@@ -94,6 +123,8 @@ export class AVLTree {
 
   insert(value) {
     // receives value from front-end "insert" button
+    // Clear any previous rotation steps before a new insertion
+    this.animationSteps = [];
     this.root = this.insertNode(this.root, value);
   }
 }

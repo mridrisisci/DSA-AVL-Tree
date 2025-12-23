@@ -25,3 +25,9 @@ text {
   fill: white;
   font-weight: bold;
 }
+
+/* Highlight nodes that are part of a rotation animation */
+g.rotating circle {
+  stroke: #ff5722;
+  stroke-width: 3;
+}
