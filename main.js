@@ -211,11 +211,11 @@ searchBtn.onclick = () => {
 deleteBtn.onclick = () => {
   const v = parseInt(input.value);
   if (isNaN(v)) return;
-  if (!insertedSet.has(v)) return;
-
-  // Remove from inserted values
-  insertedValues = insertedValues.filter(val => val !== v);
-  insertedSet.delete(v);
+  // Allow delete even if set is out of sync; best-effort
+  if (insertedSet.has(v)) {
+    insertedValues = insertedValues.filter(val => val !== v);
+    insertedSet.delete(v);
+  }
 
   history = [];
   labels = [];
@@ -223,6 +223,12 @@ deleteBtn.onclick = () => {
 
   const centerX = 300;
   const startY = 80; // push tree down so label box doesn't overlap
+
+  // Snapshot before delete (current balanced tree)
+  const beforeDelete = clone(tree.cloneTree ? tree.cloneTree(tree.root) : tree.root);
+  layout(beforeDelete, centerX, startY);
+  history.push(beforeDelete);
+  labels.push(`Before delete ${v}`);
 
   // Call delete on the tree
   tree.delete(v);

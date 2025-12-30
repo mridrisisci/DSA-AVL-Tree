@@ -496,20 +496,20 @@ export class AVLTree {
 
       // Case 1: Node with only one child or no child
       if (!node.left) {
-        const afterDelete = this.cloneTree(this.root);
-        // Remove the node from tree structure for display
+        const replacement = node.right;
+        const snapshot = this.cloneTree(replacement ? this.root : node.right);
         this.animationSteps.push({
           label: `Delete: Node removed (leaf or one child)`,
           after: this.cloneTreeExcludingValue(this.root, value)
         });
-        return node.right;
+        return replacement;
       } else if (!node.right) {
-        const afterDelete = this.cloneTree(this.root);
+        const replacement = node.left;
         this.animationSteps.push({
           label: `Delete: Node removed (leaf or one child)`,
           after: this.cloneTreeExcludingValue(this.root, value)
         });
-        return node.left;
+        return replacement;
       }
 
       // Case 2: Node with two children
