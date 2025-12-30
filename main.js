@@ -7,6 +7,8 @@ const renderer = new TreeRenderer(svg);
 
 const input = document.getElementById('valueInput');
 const insertBtn = document.getElementById('insertBtn');
+const searchBtn = document.getElementById('searchBtn');
+const deleteBtn = document.getElementById('deleteBtn');
 const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 
@@ -15,6 +17,7 @@ let currentIndex = -1;
 let labels = [];
 let insertedValues = [];
 let nextNodeId = 0;
+let currentOperation = null; // 'insert', 'delete', 'search'
 const insertedSet = new Set();
 
 function layout(node, x, y, gap = 60) {
@@ -58,6 +61,26 @@ function bstInsert(root, value) {
     root.right = bstInsert(root.right, value);
   }
   return root;
+}
+
+function bstInsertIntoClone(root, value) {
+  // Insert into a clone without balancing (for showing unbalanced state)
+  if (!root) return createNode(value);
+  const cloned = {
+    value: root.value,
+    id: root.id,
+    height: root.height,
+    left: null,
+    right: null,
+    x: root.x,
+    y: root.y
+  };
+  if (value < cloned.value) {
+    cloned.left = bstInsertIntoClone(root.left, value);
+  } else if (value > cloned.value) {
+    cloned.right = bstInsertIntoClone(root.right, value);
+  }
+  return cloned;
 }
 
 function findWithParent(root, value) {
@@ -113,24 +136,27 @@ insertBtn.onclick = () => {
   insertedValues.push(v);
   insertedSet.add(v);
 
-  tree.insert(v);
+  const centerX = 300;
+  const startY = 80;
 
+  // Snapshot before: Insert into current tree (clone) WITHOUT balancing
+  // This shows what the unbalanced state looks like after adding the value
+  let unbalancedRoot = bstInsertIntoClone(tree.root, v);
+
+  // Reset history for this insert operation
   history = [];
   labels = [];
+  currentOperation = 'insert';
 
-  const centerX = 300;
-  const startY = 40;
-
-  // Build the initial unbalanced BST (no rotations) from all inserted values
-  let unbalancedRoot = null;
-  insertedValues.forEach(val => {
-    unbalancedRoot = bstInsert(unbalancedRoot, val);
-  });
+  // Add unbalanced BST snapshot
   layout(unbalancedRoot, centerX, startY);
   history.push(clone(unbalancedRoot));
-  labels.push('');
+  labels.push(`Unbalanced BST after inserting ${v}`);
 
-  // Use the before/after snapshots from the animation steps
+  // Now insert into the actual AVL tree (this will balance it)
+  tree.insert(v);
+
+  // Use the rotation snapshots from the animation steps
   tree.animationSteps.forEach(step => {
     if (step.after) {
       layout(step.after, centerX, startY);
@@ -138,6 +164,83 @@ insertBtn.onclick = () => {
       labels.push(step.label);
     }
   });
+
+  // Always add final balanced state
+  const finalTree = clone(tree.cloneTree ? tree.cloneTree(tree.root) : tree.root);
+  layout(finalTree, centerX, startY);
+  history.push(finalTree);
+  labels.push(`Balanced AVL tree after insert ${v}`);
+
+  currentIndex = 0;
+  render();
+};
+
+searchBtn.onclick = () => {
+  const v = parseInt(input.value);
+  if (isNaN(v)) return;
+
+  history = [];
+  labels = [];
+  currentOperation = 'search';
+
+  const centerX = 300;
+  const startY = 80; // push tree down so label box doesn't overlap
+
+  // Call searchWithSteps on the tree
+  tree.searchWithSteps(v);
+
+  // Build history array from tree.animationSteps
+  tree.animationSteps.forEach(step => {
+    if (step.after) {
+      layout(step.after, centerX, startY);
+      history.push(clone(step.after));
+      labels.push(step.label);
+    }
+  });
+
+  // Add final tree snapshot
+  const finalTree = clone(tree.cloneTree ? tree.cloneTree(tree.root) : tree.root);
+  layout(finalTree, centerX, startY);
+  history.push(finalTree);
+  labels.push(`After search ${v}`);
+
+  currentIndex = 0;
+  render();
+};
+
+deleteBtn.onclick = () => {
+  const v = parseInt(input.value);
+  if (isNaN(v)) return;
+  if (!insertedSet.has(v)) return;
+
+  // Remove from inserted values
+  insertedValues = insertedValues.filter(val => val !== v);
+  insertedSet.delete(v);
+
+  history = [];
+  labels = [];
+  currentOperation = 'delete';
+
+  const centerX = 300;
+  const startY = 80; // push tree down so label box doesn't overlap
+
+  // Call delete on the tree
+  tree.delete(v);
+
+  // Build history array from tree.animationSteps
+  tree.animationSteps.forEach(step => {
+    if (step.after) {
+      layout(step.after, centerX, startY);
+      history.push(clone(step.after));
+      labels.push(step.label);
+    }
+  });
+
+  // Add final tree snapshot after deletion/balancing
+  const finalTree = clone(tree.cloneTree ? tree.cloneTree(tree.root) : tree.root);
+  layout(finalTree, centerX, startY);
+  history.push(finalTree);
+  labels.push(`After delete ${v}`);
 
   currentIndex = 0;
   render();

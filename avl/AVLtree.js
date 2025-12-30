@@ -8,13 +8,18 @@ export class AVLTree {
 
   cloneTree(node) {
     if (!node) return null;
-    return {
+    const cloned = {
       value: node.value,
       id: node.id,
       height: node.height,
       left: this.cloneTree(node.left),
       right: this.cloneTree(node.right)
     };
+    // Preserve marking properties for visualization
+    if (node.isSearchCurrent) cloned.isSearchCurrent = true;
+    if (node.isSearchFound) cloned.isSearchFound = true;
+    if (node.isBeingDeleted) cloned.isBeingDeleted = true;
+    return cloned;
   }
 
   findNodeById(node, id) {
@@ -322,6 +327,15 @@ export class AVLTree {
   insert(value) {
     this.animationSteps = [];
     this.root = this.insertNode(this.root, value);
+
+    // If no rotations occurred, still add a simple step for clarity
+    if (this.animationSteps.length === 0) {
+      const snapshot = this.cloneTree(this.root);
+      this.animationSteps.push({
+        label: `Insert: placed ${value}`,
+        after: snapshot
+      });
+    }
   }
 
   /**
@@ -385,7 +399,79 @@ export class AVLTree {
   }
 
   /**
-   * Delete a node from the AVL tree (recursive helper)
+   * Search for a value with step-by-step visualization
+   * Creates snapshots for each step of the search
+   * @param {number} value
+   */
+  searchWithSteps(value) {
+    this.animationSteps = [];
+    let current = this.root;
+    let step = 0;
+
+    if (!this.root) {
+      this.animationSteps.push({
+        label: 'Search: Tree is empty',
+        after: null
+      });
+      return;
+    }
+
+    // Initial snapshot at root
+    let snapshot = this.cloneTree(this.root);
+    let targetNode = this.findNodeById(snapshot, current.id);
+    if (targetNode) targetNode.isSearchCurrent = true;
+    this.animationSteps.push({
+      label: `Search: Start at root (${this.root.value})`,
+      after: snapshot
+    });
+
+    // Search iteration with snapshots
+    step = 1;
+    while (current) {
+      if (value === current.value) {
+        // Found
+        snapshot = this.cloneTree(this.root);
+        targetNode = this.findNodeById(snapshot, current.id);
+        if (targetNode) targetNode.isSearchFound = true;
+        this.animationSteps.push({
+          label: `Search: Found node with value ${value}`,
+          after: snapshot
+        });
+        return;
+      } else if (value < current.value) {
+        // Go left
+        snapshot = this.cloneTree(this.root);
+        targetNode = this.findNodeById(snapshot, current.id);
+        if (targetNode) targetNode.isSearchCurrent = true;
+        this.animationSteps.push({
+          label: `Search: ${value} < ${current.value}, go left`,
+          after: snapshot
+        });
+        current = current.left;
+      } else {
+        // Go right
+        snapshot = this.cloneTree(this.root);
+        targetNode = this.findNodeById(snapshot, current.id);
+        if (targetNode) targetNode.isSearchCurrent = true;
+        this.animationSteps.push({
+          label: `Search: ${value} > ${current.value}, go right`,
+          after: snapshot
+        });
+        current = current.right;
+      }
+      step++;
+    }
+
+    // Value not found - reached null
+    snapshot = this.cloneTree(this.root);
+    this.animationSteps.push({
+      label: `Search: Reached null - value ${value} not found`,
+      after: snapshot
+    });
+  }
+
+  /**
+   * Delete a node from the AVL tree (recursive helper) with animation steps
    * @param {AVLNode} node 
    * @param {number} value 
    * @returns {AVLNode} Root of the subtree
@@ -399,24 +485,69 @@ export class AVLTree {
     } else if (value > node.value) {
       node.right = this.deleteNode(node.right, value);
     } else {
-      // Node to be deleted found
+      // Node to be deleted found - save snapshot
+      const beforeDelete = this.cloneTree(this.root);
+      const targetInBefore = this.findNodeById(beforeDelete, node.id);
+      if (targetInBefore) targetInBefore.isBeingDeleted = true;
+      this.animationSteps.push({
+        label: `Delete: Found node with value ${value}`,
+        after: beforeDelete
+      });
 
       // Case 1: Node with only one child or no child
       if (!node.left) {
+        const afterDelete = this.cloneTree(this.root);
+        // Remove the node from tree structure for display
+        this.animationSteps.push({
+          label: `Delete: Node removed (leaf or one child)`,
+          after: this.cloneTreeExcludingValue(this.root, value)
+        });
         return node.right;
       } else if (!node.right) {
+        const afterDelete = this.cloneTree(this.root);
+        this.animationSteps.push({
+          label: `Delete: Node removed (leaf or one child)`,
+          after: this.cloneTreeExcludingValue(this.root, value)
+        });
         return node.left;
       }
 
       // Case 2: Node with two children
       // Get the inorder successor (smallest in the right subtree)
       const minNode = this.getMinValueNode(node.right);
+      const successorValue = minNode.value;
+      this.animationSteps.push({
+        label: `Delete: Two children - using inorder successor (${successorValue})`,
+        after: this.cloneTree(this.root)
+      });
       node.value = minNode.value;
       node.right = this.deleteNode(node.right, minNode.value);
+      return this.balance(node);
     }
 
     // Balance the node
     return this.balance(node);
+  }
+
+  /**
+   * Clone tree but exclude a specific value (for deletion visualization)
+   * @param {AVLNode} node 
+   * @param {number} excludeValue 
+   * @returns {object} Cloned tree without the excluded value
+   */
+  cloneTreeExcludingValue(node, excludeValue) {
+    if (!node) return null;
+    if (node.value === excludeValue) {
+      // Return null to exclude this node
+      return null;
+    }
+    return {
+      value: node.value,
+      id: node.id,
+      height: node.height,
+      left: this.cloneTreeExcludingValue(node.left, excludeValue),
+      right: this.cloneTreeExcludingValue(node.right, excludeValue)
+    };
   }
 
   /**
@@ -426,5 +557,14 @@ export class AVLTree {
   delete(value) {
     this.animationSteps = [];
     this.root = this.deleteNode(this.root, value);
+
+    // If no rotations occurred (or node not found), still add a simple step for clarity
+    if (this.animationSteps.length === 0) {
+      const snapshot = this.cloneTree(this.root);
+      this.animationSteps.push({
+        label: `Delete: processed ${value}`,
+        after: snapshot
+      });
+    }
   }
 }

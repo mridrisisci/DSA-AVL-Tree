@@ -143,9 +143,27 @@ export class TreeRenderer {
       this.drawLine(edge.from.x, edge.from.y, edge.to.x, edge.to.y);
     });
 
-    // Draw nodes on top
+    // Draw nodes with special coloring based on operation state
     nodes.forEach(node => {
-      this.drawCircle(node.x, node.y);
+      let fillColor = '#4CAF50';  // default green
+      let strokeColor = '#2E7D32';
+
+      // Search operation colors
+      if (node.isSearchFound) {
+        fillColor = '#4CAF50';  // green for found
+        strokeColor = '#1B5E20';
+      } else if (node.isSearchCurrent) {
+        fillColor = '#FF9800';  // orange for current node in search
+        strokeColor = '#E65100';
+      }
+
+      // Delete operation colors
+      if (node.isBeingDeleted) {
+        fillColor = '#F44336';  // red for being deleted
+        strokeColor = '#C62828';
+      }
+
+      this.drawCircle(node.x, node.y, fillColor, strokeColor);
       this.drawText(node.x, node.y, node.value.toString());
     });
   }
@@ -156,23 +174,34 @@ export class TreeRenderer {
    */
   showRotationLabel(label) {
     if (!label) return;
+    // Dynamically size the label box so long text stays readable
+    const paddingX = 14;
+    const paddingY = 10;
+    const minWidth = 220;
+    const charWidth = 7; // rough average width per character at font-size 15
+    const width = Math.max(minWidth, paddingX * 2 + label.length * charWidth);
+    const height = 32 + paddingY; // more compact to reduce overlap
+    const x = 12;
+    const y = 8; // keep box near the top to avoid overlapping the tree
+    const centerX = x + width / 2;
+    const centerY = y + height / 2 + 4; // slight offset to visually center text
 
     const rect = this.createSVGElement('rect', {
-      x: 10,
-      y: 10,
-      width: 200,
-      height: 40,
+      x,
+      y,
+      width,
+      height,
       fill: '#2196F3',
-      rx: 5,
-      ry: 5
+      rx: 6,
+      ry: 6
     });
     this.svg.appendChild(rect);
 
     const textElement = this.createSVGElement('text', {
-      x: 110,
-      y: 35,
+      x: centerX,
+      y: centerY,
       'text-anchor': 'middle',
-      'font-size': '18',
+      'font-size': '15',
       'font-weight': 'bold',
       fill: 'white'
     });
