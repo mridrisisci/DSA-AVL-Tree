@@ -91,63 +91,63 @@ export class AVLTree {
     return newRoot;
   }
 
-  rotateLeftRight(z) {
-    const before1 = this.cloneTree(this.root);
-    z.left = this.rotateLeft(z.left);
-    if (this.root === z) this.root = z;
-    const after1 = this.cloneTree(this.root);
+  rotateLeftRight(rootNode) {
+    const preFirstRotationSnapshot = this.cloneTree(this.root);
+    rootNode.left = this.rotateLeft(rootNode.left);
+    if (this.root === rootNode) this.root = rootNode;
+    const postFirstRotationSnapshot = this.cloneTree(this.root);
     this.animationSteps.push({
       label: 'Left Rotation (LR - Step 1)',
-      before: before1,
-      after: after1
+      before: preFirstRotationSnapshot,
+      after: postFirstRotationSnapshot
     });
 
-    const before2 = this.cloneTree(this.root);
-    const intermediate = this.createIntermediateRightRotation(z);
+    const preSecondRotationSnapshot = this.cloneTree(this.root);
+    const intermediate = this.createIntermediateRightRotation(rootNode);
     this.animationSteps.push({
       label: 'Right Rotation (LR - In Progress)',
-      before: before2,
+      before: preSecondRotationSnapshot,
       after: intermediate
     });
 
-    const result = this.rotateRight(z);
-    if (this.root === z) this.root = result;
-    const after2 = this.cloneTree(this.root);
+    const result = this.rotateRight(rootNode);
+    if (this.root === rootNode) this.root = result;
+    const postSecondRotationSnapshot = this.cloneTree(this.root);
     this.animationSteps.push({
       label: 'Right Rotation (LR - Complete)',
       before: intermediate,
-      after: after2
+      after: postSecondRotationSnapshot
     });
 
     return result;
   }
 
-  rotateRightLeft(z) {
-    const before1 = this.cloneTree(this.root);
-    z.right = this.rotateRight(z.right);
-    if (this.root === z) this.root = z;
-    const after1 = this.cloneTree(this.root);
+  rotateRightLeft(rootNode) {
+    const preFirstRotationSnapshot = this.cloneTree(this.root);
+    rootNode.right = this.rotateRight(rootNode.right);
+    if (this.root === rootNode) this.root = rootNode;
+    const postFirstRotationSnapshot = this.cloneTree(this.root);
     this.animationSteps.push({
       label: 'Right Rotation (RL - Step 1)',
-      before: before1,
-      after: after1
+      before: preFirstRotationSnapshot,
+      after: postFirstRotationSnapshot
     });
 
-    const before2 = this.cloneTree(this.root);
-    const intermediate = this.createIntermediateLeftRotation(z);
+    const preSecondRotationSnapshot = this.cloneTree(this.root);
+    const intermediate = this.createIntermediateLeftRotation(rootNode);
     this.animationSteps.push({
       label: 'Left Rotation (RL - In Progress)',
-      before: before2,
+      before: preSecondRotationSnapshot,
       after: intermediate
     });
 
-    const result = this.rotateLeft(z);
-    if (this.root === z) this.root = result;
-    const after2 = this.cloneTree(this.root);
+    const result = this.rotateLeft(rootNode);
+    if (this.root === rootNode) this.root = result;
+    const postSecondRotationSnapshot = this.cloneTree(this.root);
     this.animationSteps.push({
       label: 'Left Rotation (RL - Complete)',
       before: intermediate,
-      after: after2
+      after: postSecondRotationSnapshot
     });
 
     return result;
