@@ -238,5 +238,12 @@ export class AVLTree {
     return result;
   }
 
+  // show node on canvas
+  findNodeById(node, id) {
+    if (!node) return null;
+    if (node.id === id) return node;
+    return this.findNodeById(node.left, id) || this.findNodeById(node.right, id);
+  }
+
 
 }
