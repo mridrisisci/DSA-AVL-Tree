@@ -248,7 +248,7 @@ export class AVLTree {
 
     return this.balance(node);
   }
-
+//
   insert(value) {
     this.animationSteps = [];
     this.root = this.insertNode(this.root, value);
