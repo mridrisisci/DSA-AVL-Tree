@@ -113,8 +113,8 @@ export class AVLTree {
     });
     // svg - ends 
 
-    const result = this.rotateRight(rootNode);
-    if (this.root === rootNode) this.root = result;
+    const updatedRootNode = this.rotateRight(rootNode);
+    if (this.root === rootNode) this.root = updatedRootNode;
 
     // svg 
     const postSecondRotationSnapshot = this.cloneTree(this.root);
@@ -125,7 +125,7 @@ export class AVLTree {
     });
     // svg - ends 
 
-    return result;
+    return updatedRootNode;
   }
 
   rotateRightLeft(rootNode) {
@@ -187,7 +187,7 @@ export class AVLTree {
       // svg - ends
 
 
-      const result = this.rotateRight(node); // LL-case -> rotation | new root is set
+      const result = this.rotateRight(node); // | new root is set
       if (this.root === node) this.root = result;
       const after = this.cloneTree(this.root);
 
@@ -216,7 +216,7 @@ export class AVLTree {
       });
       // svg - ends 
 
-      const result = this.rotateLeft(node); // RR-case -> rotation | new root is set
+      const result = this.rotateLeft(node); //| new root is set
       if (this.root === node) this.root = result;
 
       // svg 
