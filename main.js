@@ -1,5 +1,5 @@
-import { AVLTree } from './avl/AVLTree.js';
-import { TreeRenderer } from './view/TreeRenderer.js';
+import { AVLTree } from '/avl/AVLTree.js';
+import { TreeRenderer } from '/view/TreeRenderer.js';
 
 const tree = new AVLTree();
 const svg = document.getElementById('treeCanvas');
